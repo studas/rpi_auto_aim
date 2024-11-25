@@ -2,33 +2,13 @@
 #include <iostream>
 #include <thread>
 #include <queue>
+#include <atomic>
 #include <mutex>
 #include <condition_variable>
-#include <vector>
-#include <cmath>
-#include <atomic>
+#include "ui.hpp"
 
-// Queues for communication between threads
-std::queue<std::pair<cv::Mat, double>> frameQueue;
-std::queue<std::pair<cv::Mat, double>> processedQueue;
-std::mutex frameMutex, processedMutex;
-std::condition_variable frameCondVar, processedCondVar;
+// Global flag for running the application
 std::atomic<bool> running(true);
-
-// Parameters for OpenCV GUI
-std::atomic<int> blueFilter(255), greenFilter(0), redFilter(0);
-std::atomic<int> thresholdType(0), thresholdValue(80), kernelShape(2), kernelSize(4);
-std::atomic<int> amplThreshold(10);
-
-// Callback functions
-void onBlueChange(int value, void*) { blueFilter = value; }
-void onGreenChange(int value, void*) { greenFilter = value; }
-void onRedChange(int value, void*) { redFilter = value; }
-void onThresholdTypeChange(int value, void*) { thresholdType = value; }
-void onThresholdValueChange(int value, void*) { thresholdValue = value; }
-void onKernelShapeChange(int value, void*) { kernelShape = value; }
-void onKernelSizeChange(int value, void*) { kernelSize = value; }
-void onAmplitudeChange(int value, void*) { amplThreshold = value; }
 
 // Morphological shape mapper
 int morphShape(int val) {
@@ -37,8 +17,10 @@ int morphShape(int val) {
     return cv::MORPH_ELLIPSE;
 }
 
-// Frame capture thread
-void captureFrames(const std::string& gstPipeline) {
+void captureFrames(const std::string& gstPipeline,
+                   std::queue<std::pair<cv::Mat, double>>& frameQueue,
+                   std::mutex& frameMutex,
+                   std::condition_variable& frameCondVar) {
     cv::VideoCapture cap(gstPipeline, cv::CAP_GSTREAMER);
     if (!cap.isOpened()) {
         std::cerr << "Error: Unable to open the camera stream!" << std::endl;
@@ -62,14 +44,15 @@ void captureFrames(const std::string& gstPipeline) {
     }
 }
 
-// Frame processing thread
-void processFrames() {
-    std::vector<int> pos;
-    std::vector<double> timeVec, periods;
-
+void processFrames(std::queue<std::pair<cv::Mat, double>>& frameQueue,
+                   std::queue<std::pair<cv::Mat, double>>& processedQueue,
+                   std::mutex& frameMutex,
+                   std::mutex& processedMutex,
+                   std::condition_variable& frameCondVar,
+                   std::condition_variable& processedCondVar) {
     while (running) {
         std::unique_lock<std::mutex> lock(frameMutex);
-        frameCondVar.wait(lock, [] { return !frameQueue.empty() || !running; });
+        frameCondVar.wait(lock, [&]() { return !frameQueue.empty() || !running; });
 
         if (!running && frameQueue.empty()) break;
 
@@ -77,82 +60,64 @@ void processFrames() {
         frameQueue.pop();
         lock.unlock();
 
-        // Get trackbar positions
-        double blueFilterNorm = blueFilter / 255.0;
-        double greenFilterNorm = greenFilter / 255.0;
-        double redFilterNorm = redFilter / 255.0;
-        int kernelShapeVal = morphShape(kernelShape);
+        // Apply processing
+        double blueNorm = blueFilter / 255.0;
+        double greenNorm = greenFilter / 255.0;
+        double redNorm = redFilter / 255.0;
+        int shape = morphShape(kernelShape);
+        int size = kernelSize;
 
-        // Apply color filters
+        // Filter colors
         cv::Mat filteredFrame = frame.clone();
         std::vector<cv::Mat> channels(3);
         cv::split(filteredFrame, channels);
-        channels[0] *= blueFilterNorm;
-        channels[1] *= greenFilterNorm;
-        channels[2] *= redFilterNorm;
+        channels[0] *= blueNorm;
+        channels[1] *= greenNorm;
+        channels[2] *= redNorm;
         cv::merge(channels, filteredFrame);
 
-        // Convert to grayscale and apply threshold
+        // Threshold
         cv::Mat grayFrame, thresholdedFrame;
         cv::cvtColor(filteredFrame, grayFrame, cv::COLOR_BGR2GRAY);
         cv::threshold(grayFrame, thresholdedFrame, thresholdValue, 255, thresholdType);
 
-        // Apply morphological operations
+        // Morphological operations
         cv::Mat element = cv::getStructuringElement(
-            kernelShapeVal, 
-            cv::Size(2 * kernelSize + 1, 2 * kernelSize + 1), 
-            cv::Point(kernelSize, kernelSize)
+            shape,
+            cv::Size(2 * size + 1, 2 * size + 1),
+            cv::Point(size, size)
         );
-        cv::Mat erodedFrame, dilatedFrame;
-        cv::erode(thresholdedFrame, erodedFrame, element);
-        cv::dilate(erodedFrame, dilatedFrame, element);
+        cv::Mat eroded, dilated;
+        cv::erode(thresholdedFrame, eroded, element);
+        cv::dilate(eroded, dilated, element);
 
-        // Calculate centroid
-        cv::Moments m = cv::moments(dilatedFrame, true);
-        int cX = (m.m00 != 0) ? static_cast<int>(m.m10 / m.m00) : -1;
-
-        // Update position and time vectors
-        if (cX >= 0) {
-            pos.push_back(cX);
-            timeVec.push_back(frameTime);
-
-        }
-
-        // Pass processed frame to display
+        // Pass the processed frame
         std::lock_guard<std::mutex> processedLock(processedMutex);
         if (processedQueue.size() < 10) {
-            processedQueue.push({dilatedFrame, frameTime});
+            processedQueue.push({dilated, frameTime});
             processedCondVar.notify_one();
         }
     }
 }
 
-// Main function
 int main() {
+    std::queue<std::pair<cv::Mat, double>> frameQueue, processedQueue;
+    std::mutex frameMutex, processedMutex;
+    std::condition_variable frameCondVar, processedCondVar;
+
     std::string gstPipeline =   "fdsrc ! decodebin ! videoconvert ! appsink";
 
-    // Create OpenCV window
     const std::string windowName = "Color, Threshold, Morphology Filter";
-    cv::namedWindow(windowName);
+    createUI(windowName);
 
-    // Create trackbars with callbacks
-    cv::createTrackbar("Blue", windowName, NULL, 255, onBlueChange);
-    cv::createTrackbar("Green", windowName, NULL, 255, onGreenChange);
-    cv::createTrackbar("Red", windowName, NULL, 255, onRedChange);
-    cv::createTrackbar("Threshold Type", windowName, NULL, 4, onThresholdTypeChange);
-    cv::createTrackbar("Threshold Value", windowName, NULL, 255, onThresholdValueChange);
-    cv::createTrackbar("Element Shape", windowName, NULL, 2, onKernelShapeChange);
-    cv::createTrackbar("Kernel Size", windowName, NULL, 21, onKernelSizeChange);
-    cv::createTrackbar("Amplitude Threshold", windowName, NULL, 100, onAmplitudeChange);
+    std::thread captureThread(captureFrames, gstPipeline, std::ref(frameQueue), std::ref(frameMutex), std::ref(frameCondVar));
+    std::thread processThread(processFrames, std::ref(frameQueue), std::ref(processedQueue),
+                              std::ref(frameMutex), std::ref(processedMutex),
+                              std::ref(frameCondVar), std::ref(processedCondVar));
 
-    // Start threads
-    std::thread captureThread(captureFrames, gstPipeline);
-    std::thread processThread(processFrames);
-
-    // Main display loop
     while (running) {
         std::unique_lock<std::mutex> lock(processedMutex);
-        processedCondVar.wait(lock, [] { return !processedQueue.empty() || !running; });
+        processedCondVar.wait(lock, [&]() { return !processedQueue.empty() || !running; });
 
         if (!running && processedQueue.empty()) break;
 
@@ -161,15 +126,13 @@ int main() {
         lock.unlock();
 
         cv::imshow(windowName, processedFrame);
-        if (cv::waitKey(1) == 'q') {
-            running = false;
-        }
+        if (cv::waitKey(1) == 'q') running = false;
     }
 
-    // Join threads and cleanup
     captureThread.join();
     processThread.join();
     cv::destroyAllWindows();
 
     return 0;
 }
+

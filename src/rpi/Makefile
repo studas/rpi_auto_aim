@@ -1,15 +1,16 @@
-BINNARY_NAME=auto_aim
+CC = g++
+CPPFLAGS = -std=c++17 `pkg-config --cflags --libs opencv4`
+SRCS = main.cpp ui.cpp
+OBJS = $(SRCS:.cpp=.o)
+BINNARY_NAME = auto_aim
 
-all: main.o ${BINNARY_NAME}
+all: $(BINNARY_NAME)
 
-%.o:	%.cpp
-	g++ -o $@ -c $^ `pkg-config --cflags --libs opencv4`
+$(BINNARY_NAME): $(OBJS)
+	$(CC) $(OBJS) -o $(BINNARY_NAME) $(CPPFLAGS)
 
-${BINNARY_NAME}: main.o
-	g++ -o $@ $^ `pkg-config --cflags --libs opencv4`
-
-run:
+run: $(BINNARY_NAME)
 	libcamera-vid --inline --width 640 --height 480 --nopreview --timeout 0 -o - | ./${BINNARY_NAME}
 
 clean:
-	rm -rf ${BINNARY_NAME}
+	rm -f *.o $(BINNARY_NAME)
