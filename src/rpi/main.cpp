@@ -8,9 +8,6 @@
 #include <cmath>
 #include <atomic>
 
-// Constants for gravity calculation
-const double L = 0.7;  // Length of the pendulum in meters
-
 // Queues for communication between threads
 std::queue<std::pair<cv::Mat, double>> frameQueue;
 std::queue<std::pair<cv::Mat, double>> processedQueue;
@@ -119,17 +116,6 @@ void processFrames() {
             pos.push_back(cX);
             timeVec.push_back(frameTime);
 
-            // Process oscillations and calculate gravity if enough data is available
-            if (timeVec.size() >= 10) {
-                double avgPeriod = 0;
-                for (size_t i = 1; i < timeVec.size(); ++i) {
-                    avgPeriod += timeVec[i] - timeVec[i - 1];
-                }
-                avgPeriod /= (timeVec.size() - 1);
-
-                double g = 4 * M_PI * M_PI * L / (avgPeriod * avgPeriod);
-                std::cout << "Estimated gravity: " << g << " m/s²" << std::endl;
-            }
         }
 
         // Pass processed frame to display
