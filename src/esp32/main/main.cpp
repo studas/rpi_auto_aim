@@ -59,35 +59,46 @@ extern "C" void app_main(void){
     
     while(1){
         char *received_data = i2c_slave.read_buffer();
-        
-        if (received_data == NULL) {
-            continue;
+
+        if (received_data == NULL) continue;
+
+        char **commands = (char**)malloc(20 * sizeof(char*));
+        char *command = strtok(received_data, "\n");
+        int command_count = 0;
+        while (command != NULL){
+            commands[command_count] = command;
+            command_count++;
+            command = strtok(NULL, "\n");
         }
 
-        Numbers *numbers = parseServoCommand((char *)received_data);
+        for (int j = 0; j < command_count; j++) {
+            command = commands[j];
+            Numbers *numbers = parseServoCommand(command);
 
-        if (numbers == NULL) continue;
+            if (numbers == NULL) continue;
 
-        switch (numbers->num1){
-        case 0:
-            servos[numbers->num2].set_angle(numbers->num3);
-            break;
+            switch (numbers->num1){
+                case 0:
+                    servos[numbers->num2].set_angle(numbers->num3);
+                    break;
 
-        case 1:
-            servos[numbers->num2].set_min_pulse_width(numbers->num3);
-            break;
+                case 1:
+                    servos[numbers->num2].set_min_pulse_width(numbers->num3);
+                    break;
 
-        case 2:
-            servos[numbers->num2].set_max_pulse_width(numbers->num3);
-            break;
-        
-        default:
-            printf("Invalid command\n");
-            break;
+                case 2:
+                    servos[numbers->num2].set_max_pulse_width(numbers->num3);
+                    break;
+
+                default:
+                    printf("Invalid command\n");
+                    break;
+            }
+
+            free(numbers);
         }
 
+        free(commands);
         free(received_data);
-        free(numbers);
     }
-
 }
