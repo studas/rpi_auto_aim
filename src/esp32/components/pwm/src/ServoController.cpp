@@ -11,7 +11,11 @@ static const char *TAG = "servo_controller";
 #define SERVO_MAX_DEGREE 180           // Maximum angle of rotation
 #define LEDC_FREQUENCY 50              // Frequency in Hertz (typical for servos)
 #define LEDC_TIMER LEDC_TIMER_0        // Timer number
-#define LEDC_MODE LEDC_HIGH_SPEED_MODE  // LEDC mode
+#if SOC_LEDC_SUPPORT_HS_MODE
+    #define LEDC_MODE LEDC_HIGH_SPEED_MODE  // LEDC mode
+#else
+    #define LEDC_MODE LEDC_LOW_SPEED_MODE   // LEDC mode
+#endif
 
 Servo::Servo(int gpio_pin, ledc_channel_t channel) 
     : gpio_pin(gpio_pin), channel(channel){
@@ -49,7 +53,7 @@ Servo::~Servo() {
 void Servo::set_angle(int angle) {
     this->angle = angle;
     this->update();
-    printf("Setting servo %d to %d degrees\n", gpio_pin, angle);
+    ESP_LOGI(TAG, "Setting servo %d to %d degrees", gpio_pin, angle);
 }
 
 void Servo::set_min_pulse_width(uint32_t min_pulse_width) {
