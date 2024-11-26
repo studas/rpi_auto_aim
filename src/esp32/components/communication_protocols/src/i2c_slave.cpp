@@ -21,7 +21,7 @@ static const char *TAG = "i2c_slave";
 
 I2CSlave::I2CSlave(uint16_t sda_io, uint16_t scl_io, uint16_t addr, int port) 
     : sda_io(sda_io), scl_io(scl_io), addr(addr) {
-    this->port = port ? I2C_NUM_1 : I2C_NUM_0; 
+    this->port = port ? I2C_NUM_MAX : I2C_NUM_0; 
 
     i2c_config_t conf_slave = {
         .mode = I2C_MODE_SLAVE,
@@ -61,7 +61,7 @@ char *I2CSlave::read_buffer() {
         return NULL;
     }
 
-    ESP_LOGI(TAG, "Data in I2C(%d): %s", this->sda_io, received_data);
+    ESP_LOGI(TAG, "Data in I2C at IO(%d): %s", this->sda_io, received_data);
 
     return (char *)received_data;
 }
