@@ -5,7 +5,7 @@ std::atomic<int> blueFilter(255);
 std::atomic<int> greenFilter(0);
 std::atomic<int> redFilter(0);
 std::atomic<int> thresholdType(0);
-std::atomic<int> thresholdValue(80);
+std::atomic<int> thresholdValue(19);
 std::atomic<int> kernelShape(2);
 std::atomic<int> kernelSize(4);
 
