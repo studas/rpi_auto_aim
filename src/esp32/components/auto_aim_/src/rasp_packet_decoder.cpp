@@ -53,7 +53,5 @@ char **divideI2CPacket(const char *str, int *count) {
         token = strtok(NULL, delimiters);
     }
 
-    free(copy);
-
     return result;
 }
