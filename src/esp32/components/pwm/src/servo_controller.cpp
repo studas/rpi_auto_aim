@@ -4,7 +4,7 @@
 #include "driver/ledc.h"
 #include "esp_log.h"
 
-#include "ServoController.hpp"
+#include "servo_controller.hpp"
 
 static const char *TAG = "servo_controller";
 

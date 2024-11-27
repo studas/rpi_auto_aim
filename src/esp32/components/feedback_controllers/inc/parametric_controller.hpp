@@ -2,7 +2,6 @@
 #define PARAMETRIC_CONTROLLER_HPP
 
 #include <vector>
-#include <stdexcept>
 
 class ParametricController {
 public:
