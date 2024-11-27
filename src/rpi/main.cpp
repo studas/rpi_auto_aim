@@ -10,6 +10,10 @@
 // Global flag for running the application
 std::atomic<bool> running(true);
 
+// Global variables to store the centroid coordinates
+std::atomic<int> centroidX(-1);
+std::atomic<int> centroidY(-1);
+
 // Morphological shape mapper
 int morphShape(int val) {
     if (val == 0) return cv::MORPH_RECT;
@@ -91,6 +95,23 @@ void processFrames(std::queue<std::pair<cv::Mat, double>>& frameQueue,
         cv::erode(thresholdedFrame, eroded, element);
         cv::dilate(eroded, dilated, element);
 
+        // Compute centroid
+        cv::Moments m = cv::moments(dilated, true);
+        int cX = -1, cY = -1;
+        if (m.m00 != 0) { // Avoid division by zero
+            cX = static_cast<int>(m.m10 / m.m00);
+            cY = static_cast<int>(m.m01 / m.m00);
+        }
+
+        // Update global centroid variables
+        centroidX.store(cX);
+        centroidY.store(cY);
+
+        // Draw the centroid on the processed frame
+        if (cX >= 0 && cY >= 0) {
+            cv::circle(dilated, cv::Point(cX, cY), 5, cv::Scalar(0, 0, 255), -1);
+        }
+
         // Pass the processed frame
         std::lock_guard<std::mutex> processedLock(processedMutex);
         if (processedQueue.size() < 10) {
@@ -126,6 +147,10 @@ int main() {
         lock.unlock();
 
         cv::imshow(windowName, processedFrame);
+
+        // Display centroid coordinates
+        std::cout << "Centroid: (" << centroidX.load() << ", " << centroidY.load() << ")" << std::endl;
+
         if (cv::waitKey(1) == 'q') running = false;
     }
 
@@ -135,4 +160,3 @@ int main() {
 
     return 0;
 }
-
