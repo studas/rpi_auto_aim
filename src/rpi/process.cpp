@@ -1,6 +1,8 @@
 #include "process.hpp"
 #include "ui.hpp"
+#include "pantilt.hpp"
 #include <iostream>
+#include <thread>
 
 
 extern std::atomic<bool> running;
@@ -68,6 +70,12 @@ void processFrames(std::queue<std::pair<cv::Mat, double>>& frameQueue,
             cX = static_cast<int>(m.m10 / m.m00);
             cY = static_cast<int>(m.m01 / m.m00);
         }
+	
+	// Send the errors to the controler
+	std::thread controlThread([=]() {
+    		PanTilt& pantilt = PanTilt::getInstance();
+    		pantilt.setXYErrors(cX - (frame.cols/2) + 1, cY - (frame.rows/2) + 1);
+	});
 
         // Update global centroid variables
         centroidX.store(cX);
@@ -84,5 +92,8 @@ void processFrames(std::queue<std::pair<cv::Mat, double>>& frameQueue,
             processedQueue.push({dilated, frameTime});
             processedCondVar.notify_one();
         }
+	
+	// Wait contol Thread to join
+	controlThread.join();
     }
 }
