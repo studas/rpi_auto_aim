@@ -10,7 +10,7 @@
 static const char *TAG = "i2c_slave";
 
 #define I2C_SLAVE_TX_BUF_LEN 255                        /*!< I2C master doesn't need buffer */
-#define I2C_SLAVE_RX_BUF_LEN 255                           /*!< I2C master doesn't need buffer */
+#define I2C_SLAVE_RX_BUF_LEN 512                           /*!< I2C master doesn't need buffer */
 
 #define WRITE_BIT I2C_MASTER_WRITE              /*!< I2C master write */
 #define READ_BIT I2C_MASTER_READ                /*!< I2C master read */
@@ -61,7 +61,7 @@ char *I2CSlave::read_buffer() {
         return NULL;
     }
 
-    ESP_LOGI(TAG, "Data in I2C at IO(%d): %s", this->sda_io, received_data);
+    //ESP_LOGI(TAG, "Data in I2C at IO(%d): %s", this->sda_io, received_data);
 
     return (char *)received_data;
 }
