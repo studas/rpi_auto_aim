@@ -8,15 +8,22 @@
 #include "ServoController.hpp"
 #include "i2c_slave.hpp"
 
+enum ServoCommands {
+    SET_ANGLE = 0,
+    SET_MIN_PULSE_WIDTH = 1,
+    SET_MAX_PULSE_WIDTH = 2,
+    SET_CENTROID = 3,
+    SET_CONTROLLER_PARAMETERS = 4
+};
+
 typedef struct {
-    uint32_t num1;
-    uint32_t num2;
-    uint32_t num3;
-} Numbers;
+    ServoCommands command;
+    int param1;
+    int param2;
+} RpiDataPacket;
 
-
-Numbers *parseServoCommand(const char *str) {
-    Numbers *result = (Numbers*)malloc(sizeof(Numbers));
+RpiDataPacket *parseServoCommand(const char *str) {
+    RpiDataPacket *result = (RpiDataPacket*)malloc(sizeof(RpiDataPacket));
     int count = 0;
     char *copy = strdup(str);
     char *token;
@@ -31,9 +38,9 @@ Numbers *parseServoCommand(const char *str) {
         }
 
         int num = atoi(token);
-        if (count == 0) result->num1 = num;
-        else if (count == 1) result->num2 = num;
-        else if (count == 2) result->num3 = num;
+        if (count == 0) result->command = static_cast<ServoCommands>(num);
+        else if (count == 1) result->param1 = num;
+        else if (count == 2) result->param2 = num;
 
         count++;
         token = strtok(NULL, delimiters);
@@ -73,21 +80,34 @@ extern "C" void app_main(void){
 
         for (int j = 0; j < command_count; j++) {
             command = commands[j];
-            Numbers *numbers = parseServoCommand(command);
+            RpiDataPacket *numbers = parseServoCommand(command);
+            bool valid_servo_id = numbers->param1 >= 0 && numbers->param1 < sizeof(servos) / sizeof(Servo);
 
             if (numbers == NULL) continue;
 
-            switch (numbers->num1){
-                case 0:
-                    servos[numbers->num2].set_angle(numbers->num3);
+            switch (numbers->command){
+                case SET_ANGLE:
+                    if (!valid_servo_id) break;
+                    
+                    servos[numbers->param1].set_angle(numbers->param2);
                     break;
 
-                case 1:
-                    servos[numbers->num2].set_min_pulse_width(numbers->num3);
+                case SET_MIN_PULSE_WIDTH:
+                    if (!valid_servo_id) break;
+
+                    servos[numbers->param1].set_min_pulse_width(numbers->param2);
                     break;
 
-                case 2:
-                    servos[numbers->num2].set_max_pulse_width(numbers->num3);
+                case SET_MAX_PULSE_WIDTH:
+                    if (!valid_servo_id) break;
+                    
+                    servos[numbers->param1].set_max_pulse_width(numbers->param2);
+                    break;
+
+                case SET_CENTROID:
+                    break;
+                
+                case SET_CONTROLLER_PARAMETERS:
                     break;
 
                 default:

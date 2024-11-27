@@ -1,32 +1,30 @@
-# _Sample project_
+# Protocolo de comunicação
+são enviados pacotes de 3 números via I2C para a ESP32 onde o primeiro é sempre um comando e o segundo e o terceiro são baseados no comando:
+**\<COMMAND\> \<PARAM1\> \<PARAM2\>**
+## Comandos:
+### 0: set angle
+_PARAM1_: ID do servo que vai se movimentar
+- IDs desconhecidos serão simplesmente ignorados
+_PARAM2_: angulo que o servo deve assumir
+- limitado entre 0 e 180
+### 1: set min pulse width
+_PARAM1_: ID do servo que vai se movimentar
+- IDs desconhecidos serão simplesmente ignorados
+_PARAM2_: tempo minimo do pulso em $\mu s$, representa o angulo 0
+- deve ser na ordem de grandeza de $500\mu s$
+![servo pwm duty cycle](servo_pwm_duty_cycle.png "Servo PWM Duty Cycle")
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
-
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
-
-
-
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
-
-## Example folder contents
-
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
-```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+### 2: set max pulse width
+_PARAM1_: ID do servo que vai se movimentar
+- IDs desconhecidos serão simplesmente ignorados
+_PARAM2_: tempo minimo do pulso em $\mu s$, representa o angulo 180
+- deve ser na ordem de grandeza de $2500\mu s$
+### 3: set centroid
+_PARAM1_: coordenada X do centroide
+_PARAM2_: coordenada Y do centroide
+### 4: set controller parameters
+_PARAM1_: qual parâmetro de ganho está sendo enviado (serve para o calculo dos coeficientes do controlador)
+- 1: P
+- 2: I
+- 3: D
+_PARAM2_: valor do parâmetro de ganho
