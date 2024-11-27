@@ -76,6 +76,7 @@ extern "C" void app_main(void){
                 case SET_ERROR:
                     error.x = numbers->param1;
                     error.y = numbers->param2;
+                    ESP_LOGI("main", "Error: (%f, %f)", error.x, error.y);
                     break;
                 
                 case SET_CONTROLLER_PARAMETERS:
@@ -88,16 +89,19 @@ extern "C" void app_main(void){
                         break;
                     }
 
+                    ESP_LOGI("main", "New controller parameters: kp=%f, ki=%f, kd=%f", kp, ki, kd);
+
                     x_controller.updateCoefficients(kp, ki, kd);
                     y_controller.updateCoefficients(kp, ki, kd);
                     break;
                 
                 case TOGGLE_AUTO_AIM:
-                    if (numbers->param1 < 0 || numbers->param1 > 3) {
+                    if (numbers->param2 < 0 || numbers->param2 > 3) {
                         ESP_LOGE("main", "Invalid auto aim state");
                         break;
                     }
                     auto_aim_state = static_cast<AutoAimState>(numbers->param2);
+                    ESP_LOGI("main", "Auto aim state: %d", auto_aim_state);
                     break;
 
                 default:

@@ -41,8 +41,8 @@ Servo::Servo(int gpio_pin, ledc_channel_t channel)
     ledc_channel_config(&ledc_channel);
 
     // Set default pulse width range
-    this->min_pulse_width = 500;
-    this->max_pulse_width = 2500;
+    this->min_pulse_width = 1000;
+    this->max_pulse_width = 2000;
 }
 
 Servo::~Servo() {
