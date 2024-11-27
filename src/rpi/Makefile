@@ -1,6 +1,6 @@
 CC = g++
 CPPFLAGS = -O3 -std=c++17 `pkg-config --cflags --libs opencv4`
-SRCS = main.cpp ui.cpp process.cpp capture.cpp second_order_controler.cpp pantilt.cpp
+SRCS = main.cpp ui.cpp process.cpp capture.cpp pantilt.cpp
 OBJS = $(SRCS:.cpp=.o)
 BINNARY_NAME = auto_aim
 

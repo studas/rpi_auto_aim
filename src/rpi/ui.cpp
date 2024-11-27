@@ -1,4 +1,5 @@
 #include "ui.hpp"
+#include "pantilt.hpp"
 
 extern const std::string windowName = "Color, Threshold, Morphology Filter";
 
@@ -24,8 +25,13 @@ void onThresholdTypeChange(int value, void*) { thresholdType = value; }
 void onThresholdValueChange(int value, void*) { thresholdValue = value; }
 void onKernelShapeChange(int value, void*) { kernelShape = value; }
 void onKernelSizeChange(int value, void*) { kernelSize = value; }
-void onPIDKpChange(int value, void*) { pidKp = value; }
+void onPIDKpChange(int value, void*) {
+	PanTilt& pantilt = PanTilt::getInstance();
+	pidKp = value;
+	pantilt.setControllerParameter(ControllerParam::Kp, pidKp);
+}
 void onPIDKdChange(int value, void*) {
+	PanTilt& pantilt = PanTilt::getInstance();
 	if(value < pidKd && value <= (pidKi + 100)) {
 		if(value - 101 <= 0) {
 			cv::setTrackbarPos("PID Kd", windowName, pidKd);
@@ -34,12 +40,16 @@ void onPIDKdChange(int value, void*) {
 		cv::setTrackbarPos("PID Ki", windowName, value - 101);
 	}
 	pidKd = value;
+	pantilt.setControllerParameter(ControllerParam::Kd, pidKd);
 }
 void onPIDKiChange(int value, void*) {
+	PanTilt& pantilt = PanTilt::getInstance();
 	if(value > pidKi && value >= (pidKd - 100)) {
 		cv::setTrackbarPos("PID Kd", windowName, value + 101);
 	}
 	pidKi = value;
+	pantilt.setControllerParameter(ControllerParam::Ki, pidKi);
+
 }
 
 void createUI() {
