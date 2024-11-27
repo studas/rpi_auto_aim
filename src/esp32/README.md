@@ -29,8 +29,13 @@ _PARAM1_: coordenada X do centroide
 _PARAM2_: coordenada Y do centroide
 ### 4: set controller parameters
 _PARAM1_: qual parâmetro de ganho está sendo enviado (serve para o calculo dos coeficientes do controlador)
-- 1: P
-- 2: I
-- 3: D
+- 0: P
+- 1: I
+- 2: D
 
 _PARAM2_: valor do parâmetro de ganho
+### 5: set aim mode
+_PARAM1_: define o modo da mira
+- 0: override mira automatica e manual ao mesmo tempo
+- 1: mira manual
+- 2: mira automatica
