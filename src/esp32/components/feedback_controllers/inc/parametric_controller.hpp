@@ -9,7 +9,7 @@ public:
     ParametricController(const std::vector<double>& q_coeffs);
 
     // Compute the next control signal
-    double calculateControl(double desired, double current);
+    double calculateControl(double error);
 
     std::vector<double> getCoefficients() const { return q; }
     void updateCoefficients(const std::vector<double>& q_coeffs);

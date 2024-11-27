@@ -14,9 +14,7 @@ ParametricController::ParametricController(const std::vector<double>& q_coeffs)
     prev_error.resize(q.size(), 0.0);
 }
 
-double ParametricController::calculateControl(double desired, double current) {
-    double error = desired - current;
-
+double ParametricController::calculateControl(double error) {
     double u = prev_u;
     for (std::size_t j = 0; j < q.size(); ++j) {
         u += q[j] * prev_error[j];
