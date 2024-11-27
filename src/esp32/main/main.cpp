@@ -41,17 +41,11 @@ extern "C" void app_main(void){
 
         if (received_data == NULL) continue;
 
-        char **commands = (char**)malloc(20 * sizeof(char*));
-        char *command = strtok(received_data, "\n");
         int command_count = 0;
-        while (command != NULL){
-            commands[command_count] = command;
-            command_count++;
-            command = strtok(NULL, "\n");
-        }
+        char **commands = divideI2CPacket(received_data, &command_count);
 
         for (int j = 0; j < command_count; j++) {
-            command = commands[j];
+            char *command = commands[j];
             RpiDataPacket *numbers = parseServoCommand(command);
             bool valid_servo_id = numbers->param1 >= 0 && numbers->param1 < sizeof(servos) / sizeof(Servo);
 

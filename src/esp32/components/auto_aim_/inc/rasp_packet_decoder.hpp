@@ -17,5 +17,6 @@ typedef struct {
 } RpiDataPacket;
 
 RpiDataPacket *parseServoCommand(const char *str);
+char **divideI2CPacket(const char *str, int *command_count);
 
 #endif

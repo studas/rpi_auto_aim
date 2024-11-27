@@ -38,3 +38,22 @@ RpiDataPacket *parseServoCommand(const char *str) {
 
     return result;
 }
+
+char **divideI2CPacket(const char *str, int *count) {
+    char **result = (char**)malloc(20 * sizeof(char*));
+    char *copy = strdup(str);
+    char *token;
+    const char *delimiters = "\n";
+    
+    token = strtok(copy, delimiters);
+    *count = 0;
+    while (token != NULL) {
+        result[(*count)] = token;
+        (*count)++;
+        token = strtok(NULL, delimiters);
+    }
+
+    free(copy);
+
+    return result;
+}
