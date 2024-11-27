@@ -15,6 +15,6 @@ extern std::atomic<int> kernelSize;
 extern std::atomic<int> amplThreshold;
 
 // Function to create the OpenCV UI
-void createUI(const std::string& windowName);
+void createUI();
 
 #endif

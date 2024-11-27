@@ -9,6 +9,8 @@
 #include "capture.hpp"
 #include "process.hpp"
 
+extern const std::string windowName;
+
 // Global flag for running the application
 std::atomic<bool> running(true);
 
@@ -19,8 +21,7 @@ int main() {
 
     std::string gstPipeline = "fdsrc ! decodebin ! videoconvert ! appsink";
 
-    const std::string windowName = "Color, Threshold, Morphology Filter";
-    createUI(windowName);
+    createUI();
 
     std::thread captureThread(captureFrames, gstPipeline, std::ref(frameQueue), std::ref(frameMutex), std::ref(frameCondVar));
     std::thread processThread(processFrames, std::ref(frameQueue), std::ref(processedQueue),
