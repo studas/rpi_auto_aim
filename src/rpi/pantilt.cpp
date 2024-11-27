@@ -4,58 +4,44 @@
 #include <linux/i2c-dev.h> // For I2C_SLAVE
 #include <sys/ioctl.h>   // For ioctl()
 #include <stdexcept>     // For exceptions
-#include <iostream>      // For error messages
+#include <sstream>       // For stringstream
 
+// Static method to get the singleton instance
+PanTilt& PanTilt::getInstance() {
+    // Static instance with fixed bus and device address
+    static PanTilt instance("/dev/i2c-1", 0x0A);
+    return instance;
+}
+
+// Private constructor
 PanTilt::PanTilt(const std::string& i2cBus, uint8_t deviceAddress)
     : i2cBus(i2cBus), deviceAddress(deviceAddress) {
-    // Open the I2C bus
     i2cFile = open(i2cBus.c_str(), O_RDWR);
     if (i2cFile < 0) {
-        throw std::runtime_error("Failed to open the I2C bus");
+        throw std::runtime_error("Failed to open I2C bus.");
     }
-
-    // Set the I2C slave address
     if (ioctl(i2cFile, I2C_SLAVE, deviceAddress) < 0) {
         close(i2cFile);
-        throw std::runtime_error("Failed to set I2C slave address");
+        throw std::runtime_error("Failed to acquire bus access or talk to slave.");
     }
 }
 
-void PanTilt::moveYaw(int angle) {
-    sendCommand(0, 1, angle); // Action 0 (MOVE), Servo ID 1 (Yaw)
-}
-
-void PanTilt::setZeroYaw() {
-    sendCommand(1, 1, 500); // Action 1 (SET ZERO), Servo ID 1 (Yaw)
-}
-
-void PanTilt::movePitch(int angle) {
-    sendCommand(0, 0, angle); // Action 0 (MOVE), Servo ID 0 (Pitch)
-}
-
-void PanTilt::setZeroPitch() {
-    sendCommand(1, 0, 500); // Action 1 (SET ZERO), Servo ID 0 (Pitch)
-}
-
-void PanTilt::sendCommand(uint8_t action, uint8_t servoId, int angle) {
-    // Construct the command as a string
-    std::string command = std::to_string(action) + " " +
-                          std::to_string(servoId) + " " +
-                          std::to_string(angle) + "\n" ;
-
-    // Convert the command string to bytes
-    std::vector<uint8_t> commandBytes(command.begin(), command.end());
-
-    // Send the command over I2C
-    if (write(i2cFile, commandBytes.data(), commandBytes.size()) !=
-        static_cast<ssize_t>(commandBytes.size())) {
-        throw std::runtime_error("Failed to write to the I2C device");
+void PanTilt::sendCommand(const std::string& command) {
+    std::lock_guard<std::mutex> lock(commandMutex);
+    if (write(i2cFile, command.c_str(), command.size()) < 0) {
+        throw std::runtime_error("Failed to send I2C command: " + command);
     }
-        //usleep(1000000); // 1ms delay
-
+    usleep(20000); // 20ms
 }
 
-std::vector<uint8_t> PanTilt::stringToBytes(const std::string& str) {
-    return std::vector<uint8_t>(str.begin(), str.end());
+void PanTilt::setXYErrors(int xError, int yError) {
+    std::ostringstream command;
+    command << "3 " << xError << " " << yError << std::endl;
+    sendCommand(command.str());
 }
 
+void PanTilt::setControllerParameter(ControllerParam paramId, int value) {
+    std::ostringstream command;
+    command << "4 " << static_cast<int>(paramId) << " " << value << std::endl;
+    sendCommand(command.str());
+}
