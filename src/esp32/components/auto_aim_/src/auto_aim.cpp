@@ -16,11 +16,13 @@ void auto_aim(void *parameters){
 
         if((*params->auto_aim_state) == DISABLED) continue;
 
-        double x_control = params->x_controller->calculateControl(target_error.x, params->error->x);
-        double y_control = params->y_controller->calculateControl(target_error.y, params->error->y);
+        double q0 = params->x_controller->getCoefficients()[0];
 
-        int yaw_angle = params->servos[0].get_angle() + x_control;
-        int pitch_angle = params->servos[1].get_angle() + y_control;
+        double x_control = params->x_controller->calculateControl(params->error->x);
+        double y_control = params->y_controller->calculateControl(params->error->y);
+
+        int yaw_angle = (x_control + q0)/(2*q0)*180;
+        int pitch_angle = (y_control + q0)/(2*q0)*180;
 
         params->servos[0].set_angle(yaw_angle);
         params->servos[1].set_angle(pitch_angle);
