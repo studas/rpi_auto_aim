@@ -1,8 +1,6 @@
 #include "process.hpp"
 #include "ui.hpp"
-#include "pantilt.hpp"
 #include <iostream>
-#include <thread>
 
 
 extern std::atomic<bool> running;
@@ -65,17 +63,11 @@ void processFrames(std::queue<std::pair<cv::Mat, double>>& frameQueue,
 
         // Compute centroid
         cv::Moments m = cv::moments(dilated, true);
-        int cX = -1, cY = -1;
+        int cX = 320, cY = 240;
         if (m.m00 != 0) { // Avoid division by zero
             cX = static_cast<int>(m.m10 / m.m00);
             cY = static_cast<int>(m.m01 / m.m00);
         }
-	
-	// Send the errors to the controler
-	std::thread controlThread([=]() {
-    		PanTilt& pantilt = PanTilt::getInstance();
-    		pantilt.setXYErrors(cX - (frame.cols/2) + 1, cY - (frame.rows/2) + 1);
-	});
 
         // Update global centroid variables
         centroidX.store(cX);
@@ -86,14 +78,19 @@ void processFrames(std::queue<std::pair<cv::Mat, double>>& frameQueue,
             cv::circle(dilated, cv::Point(cX, cY), 5, cv::Scalar(0, 0, 255), -1);
         }
 
+	// Draw center of the frame
+	// Draw a vertical blue line at x = 320
+    	cv::line(dilated, cv::Point(320, 0), cv::Point(320, dilated.rows - 1), cv::Scalar(255, 0, 0), 2);
+
+    	// Draw a horizontal blue line at y = 240
+    	cv::line(dilated, cv::Point(0, 240), cv::Point(dilated.cols - 1, 240), cv::Scalar(255, 0, 0), 2);
+
+
         // Pass the processed frame
         std::lock_guard<std::mutex> processedLock(processedMutex);
         if (processedQueue.size() < 10) {
             processedQueue.push({dilated, frameTime});
             processedCondVar.notify_one();
-        }
-	
-	// Wait contol Thread to join
-	controlThread.join();
+        }	
     }
 }

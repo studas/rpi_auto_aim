@@ -14,7 +14,7 @@ std::atomic<int> kernelSize(4);
 
 // PID parameters
 std::atomic<int> pidKp(0);
-std::atomic<int> pidKd(101);
+std::atomic<int> pidKd(0);
 std::atomic<int> pidKi(0);
 
 // Callback functions for trackbars
@@ -32,21 +32,22 @@ void onPIDKpChange(int value, void*) {
 }
 void onPIDKdChange(int value, void*) {
 	PanTilt& pantilt = PanTilt::getInstance();
-	if(value < pidKd && value <= (pidKi + 100)) {
+	/*if(value < pidKd && value <= (pidKi + 100)) {
 		if(value - 101 <= 0) {
 			cv::setTrackbarPos("PID Kd", windowName, pidKd);
 			return;
 		}
 		cv::setTrackbarPos("PID Ki", windowName, value - 101);
-	}
+	}*/
 	pidKd = value;
 	pantilt.setControllerParameter(ControllerParam::Kd, pidKd);
 }
 void onPIDKiChange(int value, void*) {
 	PanTilt& pantilt = PanTilt::getInstance();
-	if(value > pidKi && value >= (pidKd - 100)) {
+	/*if(value > pidKi && value >= (pidKd - 100)) {
 		cv::setTrackbarPos("PID Kd", windowName, value + 101);
-	}
+	}*/
+
 	pidKi = value;
 	pantilt.setControllerParameter(ControllerParam::Ki, pidKi);
 
