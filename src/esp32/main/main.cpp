@@ -28,9 +28,9 @@ extern "C" void app_main(void){
 
     I2CSlave i2c_slave(21, 22, 0x0A, 0);
 
-    double kp = 0.12;
-    double ki = 0.04;
-    double kd = 0.02;
+    double kp = 0.320;
+    double ki = 0.015;
+    double kd = 0.051;
     double step = 0.2;
     ParametricController x_controller({kp, ki, kd});
     ParametricController y_controller({kp, ki, kd});
@@ -80,29 +80,27 @@ extern "C" void app_main(void){
                     error.y = numbers->param2;
 
                     if (auto_aim_state == DISABLED) break;
-
-                    ESP_LOGI("main", "Error: (%f, %f)", error.x, error.y);
-
+                    //ESP_LOGI("main", "Error: (%f, %f)", error.x, error.y);
                     double x_control = x_controller.calculateControl(error.x);
                     double y_control = y_controller.calculateControl(error.y);
 
-                    servos[0].add_angle(x_control*step);
-                    servos[1].add_angle(y_control*step);
+                    servos[0].add_pulse_width(x_control*step);
+                    servos[1].add_pulse_width(y_control*step);
                     break;
                 }
                 
                 case SET_CONTROLLER_PARAMETERS:
 
-                    if(numbers->param1 == 0) kp = numbers->param2/100.0f;
-                    else if(numbers->param1 == 1) ki = numbers->param2/100.0f;
-                    else if(numbers->param1 == 2) kd = numbers->param2/100.0f;
+                    if(numbers->param1 == 0) kp = numbers->param2/1000.0f;
+                    else if(numbers->param1 == 1) ki = numbers->param2/1000.0f;
+                    else if(numbers->param1 == 2) kd = numbers->param2/1000.0f;
                     else if(numbers->param1 == 3) step = numbers->param2/10.0f;
                     else{
                         ESP_LOGE("main", "Invalid controller parameter");
                         break;
                     }
 
-                    ESP_LOGI("main", "New controller parameters: kp=%f, ki=%f, kd=%f", kp, ki, kd);
+                    ESP_LOGI("main", "New controller parameters: kp=%f, ki=%f, kd=%f, step: %f", kp, ki, kd, step);
 
                     x_controller.updateCoefficients({kp, ki, kd});
                     y_controller.updateCoefficients({kp, ki, kd});

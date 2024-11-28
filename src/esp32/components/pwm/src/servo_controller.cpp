@@ -51,16 +51,23 @@ Servo::~Servo() {
 }
 
 void Servo::set_angle(int angle) {
-    this->angle = angle;
+    if (angle < 0) angle = 0;
+    if (angle > SERVO_MAX_DEGREE) angle = SERVO_MAX_DEGREE;
+
+    this->pulse_width = min_pulse_width +
+                           (angle) * ((max_pulse_width - min_pulse_width) / SERVO_MAX_DEGREE);
     this->update();
     ESP_LOGI(TAG, "Setting servo %d to %d degrees", gpio_pin, angle);
 }
 
-void Servo::add_angle(int angle) {
-    this->angle += angle;
+void Servo::add_pulse_width(uint32_t change) {
+    if (change == 0) return;
+
+    this->pulse_width += change;
+    if (this->pulse_width < min_pulse_width) this->pulse_width = this->min_pulse_width;
+    if (this->pulse_width > max_pulse_width) this->pulse_width = this->max_pulse_width;
     this->update();
-    if (angle > 0)
-        ESP_LOGI(TAG, "Adding %d degrees to servo %d. New angle: %d", angle, gpio_pin, this->angle);
+    ESP_LOGI(TAG, "Adding %ld to servo %d. New pulse width %ld", change, this->gpio_pin, this->pulse_width);
 }
 
 void Servo::set_min_pulse_width(uint32_t min_pulse_width) {
@@ -76,12 +83,7 @@ void Servo::set_max_pulse_width(uint32_t max_pulse_width) {
 }
 
 void Servo::update() {
-    if (this->angle < 0) this->angle = 0;
-    if (this->angle > SERVO_MAX_DEGREE) this->angle = SERVO_MAX_DEGREE;
-
-    uint32_t pulse_width = min_pulse_width +
-                           (angle) * ((max_pulse_width - min_pulse_width) / SERVO_MAX_DEGREE);
-    uint32_t duty = (pulse_width * 8192) / 20000;
+    uint32_t duty = (this->pulse_width * 8192) / 20000;
     ledc_set_duty(LEDC_MODE, channel, duty);
     ledc_update_duty(LEDC_MODE, channel);
 }
