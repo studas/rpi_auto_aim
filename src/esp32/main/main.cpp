@@ -74,8 +74,8 @@ extern "C" void app_main(void){
 
                 case SET_ERROR:
                 {
-                    Coordinate error = {numbers->param1, numbers->param2};
                     if (auto_aim_state == MANUAL) break;
+                    Coordinate error = {numbers->param1, numbers->param2};
                     if (error.x == 0 && error.y == 0) break;
 
                     ESP_LOGI("main", "Error: (%d, %d)", error.x, error.y);
