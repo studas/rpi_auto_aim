@@ -67,7 +67,10 @@ void Servo::add_pulse_width(uint32_t change) {
     if (this->pulse_width < min_pulse_width) this->pulse_width = this->min_pulse_width;
     if (this->pulse_width > max_pulse_width) this->pulse_width = this->max_pulse_width;
     this->update();
-    ESP_LOGI(TAG, "Adding %ld to servo %d. New pulse width %ld", change, this->gpio_pin, this->pulse_width);
+
+    if(!(this->pulse_width == this->min_pulse_width) && !(this->pulse_width == this->max_pulse_width)) {
+        ESP_LOGI(TAG, "Adding %ld to servo %d. New pulse width %ld", change, this->gpio_pin, this->pulse_width);
+    }
 }
 
 void Servo::set_min_pulse_width(uint32_t min_pulse_width) {

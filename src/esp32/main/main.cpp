@@ -80,7 +80,9 @@ extern "C" void app_main(void){
                     error.y = numbers->param2;
 
                     if (auto_aim_state == DISABLED) break;
-                    //ESP_LOGI("main", "Error: (%f, %f)", error.x, error.y);
+                    if (error.x == 0 && error.y == 0) break;
+                    
+                    ESP_LOGI("main", "Error: (%f, %f)", error.x, error.y);
                     double x_control = x_controller.calculateControl(error.x);
                     double y_control = y_controller.calculateControl(error.y);
 
