@@ -18,6 +18,7 @@ public:
     Servo(int gpio_pin, ledc_channel_t channel);
     ~Servo();
     void set_angle(int angle);
+    void add_angle(int angle);
     int get_angle() { return angle; }
     void set_min_pulse_width(uint32_t min_pulse_width);
     void set_max_pulse_width(uint32_t max_pulse_width);

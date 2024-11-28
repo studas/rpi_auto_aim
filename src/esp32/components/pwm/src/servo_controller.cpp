@@ -56,6 +56,12 @@ void Servo::set_angle(int angle) {
     ESP_LOGI(TAG, "Setting servo %d to %d degrees", gpio_pin, angle);
 }
 
+void Servo::add_angle(int angle) {
+    this->angle += angle;
+    this->update();
+    ESP_LOGI(TAG, "Adding %d degrees to servo %d. New angle: %d", angle, gpio_pin, this->angle);
+}
+
 void Servo::set_min_pulse_width(uint32_t min_pulse_width) {
     this->min_pulse_width = min_pulse_width;
     this->update();
