@@ -37,7 +37,9 @@ _PARAM1_: qual parâmetro de ganho está sendo enviado (serve para o calculo dos
 
 _PARAM2_: valor do parâmetro de ganho
 ### 5: set aim mode
-_PARAM1_: define o modo da mira
+_PARAM1_: sempre 0
+
+_PARAM2_: define o modo da mira
 - 0: mira manual
 - 1: mira automatica
 - 2: override mira automatica e manual ao mesmo tempo
