@@ -15,6 +15,12 @@ enum AutoAimState {
     ENABLED = 2,
 };
 
+char ** auto_aim_state_strings = (char*[]) {
+    "OVERRIDE",
+    "DISABLED",
+    "ENABLED",
+};
+
 typedef struct {
     Servo* servos;
     AutoAimState* auto_aim_state;
