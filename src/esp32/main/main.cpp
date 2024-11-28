@@ -24,7 +24,7 @@ extern "C" void app_main(void){
     servo1.set_max_pulse_width(1800);
     Servo servos[] = {servo0, servo1};
 
-    AutoAimState auto_aim_state = DISABLED;
+    AutoAimState auto_aim_state = MANUAL;
 
     I2CSlave i2c_slave(21, 22, 0x0A, 0);
 
@@ -75,7 +75,7 @@ extern "C" void app_main(void){
                 case SET_ERROR:
                 {
                     Coordinate error = {numbers->param1, numbers->param2};
-                    if (auto_aim_state == DISABLED) break;
+                    if (auto_aim_state == MANUAL) break;
                     if (error.x == 0 && error.y == 0) break;
 
                     ESP_LOGI("main", "Error: (%d, %d)", error.x, error.y);
