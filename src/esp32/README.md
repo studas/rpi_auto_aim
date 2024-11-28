@@ -23,10 +23,10 @@ _PARAM1_: ID do servo que vai se movimentar
 
 _PARAM2_: tempo minimo do pulso em $\mu s$, representa o angulo 180
 - deve ser na ordem de grandeza de $2500\mu s$
-### 3: set centroid
-_PARAM1_: coordenada X do centroide
+### 3: set error
+_PARAM1_: amplitude do erro no eixo X
 
-_PARAM2_: coordenada Y do centroide
+_PARAM2_: amplitude do erro no eixo Y
 ### 4: set controller parameters
 _PARAM1_: qual parâmetro de ganho está sendo enviado (serve para o calculo dos coeficientes do controlador)
 - 0: P
