@@ -118,7 +118,7 @@ void onServoXMaxChange(int value, void*) {
 		cv::setTrackbarPos("Servo X Min", windowName, value - 1);
 	}
 	servoXMax = value;
-    	pantilt.setServoYMax(servoYMax);
+    	pantilt.setServoXMax(servoXMax);
 
 }
 
@@ -144,7 +144,7 @@ void onServoYMaxChange(int value, void*) {
 		}
 		cv::setTrackbarPos("Servo Y Min", windowName, value - 1);
 	}
-	servoXMax = value;
+	servoYMax = value;
     	pantilt.setServoYMax(servoYMax);
 }
 
@@ -167,9 +167,9 @@ void createUI() {
     cv::createTrackbar("Operation Mode", windowName, nullptr, 2, onOpModeChange);
     cv::createTrackbar("Angle X", windowName, nullptr, 180, onXAngleChange);
     cv::createTrackbar("Angle Y", windowName, nullptr, 180, onYAngleChange);
-    cv::createTrackbar("Servo X Min", windowName, nullptr, 1500, onServoXMinChange);
+    cv::createTrackbar("Servo X Min", windowName, nullptr, 3000, onServoXMinChange);
     cv::createTrackbar("Servo X Max", windowName, nullptr, 3000, onServoXMaxChange);
-    cv::createTrackbar("Servo Y Min", windowName, nullptr, 1500, onServoYMinChange);
+    cv::createTrackbar("Servo Y Min", windowName, nullptr, 3000, onServoYMinChange);
     cv::createTrackbar("Servo Y Max", windowName, nullptr, 3000, onServoYMaxChange);
 
 
