@@ -8,9 +8,9 @@
 
 // Enum for Controller Parameters
 enum ControllerParam {
-    Kp = 1,
-    Ki = 2,
-    Kd = 3
+    Kp = 0,
+    Ki = 1,
+    Kd = 2
 };
 
 extern std::atomic<int> pidKp;
