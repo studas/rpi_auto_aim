@@ -5,14 +5,33 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <unistd.h>
 #include "ui.hpp"
 #include "capture.hpp"
 #include "process.hpp"
+#include "pantilt.hpp"
 
 extern const std::string windowName;
 
 // Global flag for running the application
 std::atomic<bool> running(true);
+std::atomic<bool> step_by_step(false);
+std::atomic<bool> next_step(false);
+
+void sendErrors() {
+	PanTilt& pantilt = PanTilt::getInstance();
+	while(running) {
+		if(step_by_step) {
+			while(!next_step && running && step_by_step);
+			// Check again step_by_step for reasons of multithreading
+			pantilt.setXYErrors(-(centroidX - 320), centroidY - 240);
+			next_step = false;
+		} else {
+			pantilt.setXYErrors(-(centroidX - 320), centroidY - 240);
+			usleep(100000);
+		}
+	}
+}
 
 int main() {
     std::queue<std::pair<cv::Mat, double>> frameQueue, processedQueue;
@@ -27,6 +46,7 @@ int main() {
     std::thread processThread(processFrames, std::ref(frameQueue), std::ref(processedQueue),
                               std::ref(frameMutex), std::ref(processedMutex),
                               std::ref(frameCondVar), std::ref(processedCondVar));
+    std::thread errorThread(sendErrors);
 
     while (running) {
         std::unique_lock<std::mutex> lock(processedMutex);
@@ -42,12 +62,26 @@ int main() {
 
         // Display centroid coordinates
         std::cout << "Centroid: (" << centroidX.load() << ", " << centroidY.load() << ")" << std::endl;
+	std::cout << "Step by step mode: " << ((step_by_step)? "ON" : "OFF") << std::endl;
 
-        if (cv::waitKey(1) == 'q') running = false;
+	switch(cv::waitKey(1)) {
+		case 'q':
+			running = false;
+			break;
+		case 's':
+			step_by_step = !step_by_step;
+			break;
+		case 'n':
+			next_step = true;
+			break;
+
+	}
+        //if (cv::waitKey(1) == 'q') running = false;
     }
 
     captureThread.join();
     processThread.join();
+    errorThread.join();
     cv::destroyAllWindows();
 
     return 0;
