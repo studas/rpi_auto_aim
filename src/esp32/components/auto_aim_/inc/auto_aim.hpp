@@ -10,15 +10,15 @@ typedef struct {
 } Coordinate;
 
 enum AutoAimState {
-    OVERRIDE = 0,
-    DISABLED = 1,
-    ENABLED = 2,
+    DISABLED = 0,
+    ENABLED = 1,
+    OVERRIDE = 2,
 };
 
 char ** auto_aim_state_strings = (char*[]) {
-    "OVERRIDE",
     "DISABLED",
     "ENABLED",
+    "OVERRIDE",
 };
 
 typedef struct {

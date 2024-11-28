@@ -95,6 +95,11 @@ extern "C" void app_main(void){
                     else if(numbers->param1 == 1) ki = numbers->param2/1000.0f;
                     else if(numbers->param1 == 2) kd = numbers->param2/1000.0f;
                     else if(numbers->param1 == 3) step = numbers->param2/10.0f;
+                    else if(numbers->param1 == 4){
+                        x_controller.reset();
+                        y_controller.reset();
+                        ESP_LOGI("main", "Controller reset");
+                    }
                     else{
                         ESP_LOGE("main", "Invalid controller parameter");
                         break;
@@ -113,12 +118,6 @@ extern "C" void app_main(void){
                     }
                     auto_aim_state = static_cast<AutoAimState>(numbers->param2);
                     ESP_LOGI("main", "Auto aim: %s", auto_aim_state_strings[auto_aim_state]);
-
-                    if(numbers->param1 == 1){
-                        x_controller.reset();
-                        y_controller.reset();
-                        ESP_LOGI("main", "Controller reset");
-                    }
                     break;
 
                 default:
