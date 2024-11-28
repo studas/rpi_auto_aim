@@ -29,13 +29,13 @@ double ParametricController::calculateControl(double error) {
         printf("+ %f * %f ", q[j], prev_error[j]);
     }
     printf("= %f\n", u);
-
-    prev_u = u;*/
+    */
 
     double up = q[0] * prev_error[0];
     double ui = prev_u + q[0] * q[1] * prev_error[1];
     double ud = q[0] * q[2] * (prev_error[0] - prev_error[1]);
     double u = up + ui + ud;
+    prev_u = ui;
 
     return u;
 }
