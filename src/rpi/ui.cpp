@@ -8,7 +8,7 @@ std::atomic<int> blueFilter(255);
 std::atomic<int> greenFilter(0);
 std::atomic<int> redFilter(0);
 std::atomic<int> thresholdType(0);
-std::atomic<int> thresholdValue(19);
+std::atomic<int> thresholdValue(13);
 std::atomic<int> kernelShape(2);
 std::atomic<int> kernelSize(4);
 
@@ -19,11 +19,11 @@ std::atomic<int> servoYMin(1300);
 std::atomic<int> servoYMax(1800);
 
 // PID parameters
-std::atomic<int> pidKp(0);
-std::atomic<int> pidKd(0);
-std::atomic<int> pidKi(0);
+std::atomic<int> pidKp(320);
+std::atomic<int> pidKd(51);
+std::atomic<int> pidKi(15);
 // Correction Factor
-std::atomic<int> pidKs(2);
+std::atomic<int> pidKs(200);
 
 // Absolute Angles
 std::atomic<int> xAngle(90);
