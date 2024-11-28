@@ -11,7 +11,7 @@
 
 #include "servo_controller.hpp"
 #include "i2c_slave.hpp"
-#include "parametric_controller.hpp"
+#include "pid_controller.hpp"
 #include "auto_aim.hpp"
 #include "rasp_packet_decoder.hpp"
 
@@ -31,11 +31,9 @@ extern "C" void app_main(void){
     double kp = 0.320;
     double ki = 0.015;
     double kd = 0.051;
-    double step = 0.2;
-    ParametricController x_controller({kp, ki, kd});
-    ParametricController y_controller({kp, ki, kd});
-
-    Coordinate error = {0.0, 0.0};
+    double ks = 0.2;
+    PIDController x_controller(kp, ki, kd, ks);
+    PIDController y_controller(kp, ki, kd, ks);
     
     while(1){
         char *received_data = i2c_slave.read_buffer();
@@ -76,42 +74,54 @@ extern "C" void app_main(void){
 
                 case SET_ERROR:
                 {
-                    error.x = numbers->param1;
-                    error.y = numbers->param2;
-
+                    Coordinate error = {numbers->param1, numbers->param2};
                     if (auto_aim_state == DISABLED) break;
                     if (error.x == 0 && error.y == 0) break;
-                    
-                    ESP_LOGI("main", "Error: (%f, %f)", error.x, error.y);
+
+                    ESP_LOGI("main", "Error: (%d, %d)", error.x, error.y);
                     double x_control = x_controller.calculateControl(error.x);
                     double y_control = y_controller.calculateControl(error.y);
 
-                    servos[0].add_pulse_width(x_control*step);
-                    servos[1].add_pulse_width(y_control*step);
+                    servos[0].add_pulse_width(x_control);
+                    servos[1].add_pulse_width(y_control);
                     break;
                 }
                 
-                case SET_CONTROLLER_PARAMETERS:
+                case SET_CONTROLLER_PARAMETERS:{
+                    ControllerParameters param = static_cast<ControllerParameters>(numbers->param1);
+                    double value = numbers->param2/1000.0f;
+                    switch(param){
+                    case KP:
+                        x_controller.updateKp(value);
+                        y_controller.updateKp(value);
+                        break;
+                    
+                    case KI:
+                        x_controller.updateKi(value);
+                        y_controller.updateKi(value);
+                        break;
 
-                    if(numbers->param1 == 0) kp = numbers->param2/1000.0f;
-                    else if(numbers->param1 == 1) ki = numbers->param2/1000.0f;
-                    else if(numbers->param1 == 2) kd = numbers->param2/1000.0f;
-                    else if(numbers->param1 == 3) step = numbers->param2/10.0f;
-                    else if(numbers->param1 == 4){
+                    case KD:
+                        x_controller.updateKd(value);
+                        y_controller.updateKd(value);
+                        break;
+
+                    case KS:
+                        x_controller.updateKs(value);
+                        y_controller.updateKs(value);
+                        break;
+
+                    case RESET:
                         x_controller.reset();
                         y_controller.reset();
-                        ESP_LOGI("main", "Controller reset");
-                    }
-                    else{
-                        ESP_LOGE("main", "Invalid controller parameter");
                         break;
+
+                    default:
+                        ESP_LOGE("main", "Invalid controller parameter");
+                        break;   
                     }
-
-                    ESP_LOGI("main", "New controller parameters: kp=%f, ki=%f, kd=%f, step: %f", kp, ki, kd, step);
-
-                    x_controller.updateCoefficients({kp, ki, kd});
-                    y_controller.updateCoefficients({kp, ki, kd});
                     break;
+                }
                 
                 case TOGGLE_AUTO_AIM:
                     if (numbers->param2 < 0 || numbers->param2 > 3) {
