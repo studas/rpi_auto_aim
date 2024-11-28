@@ -1,4 +1,0 @@
-- [ ] parametric controller is not a parametric one anymore, change the name to reflect this
-- [ ] auto_aim.cpp should have the functions that are in the main.cpp
-- [ ] need a better way to change the angle (maybe change the pulse width will give better precision)
-- [ ] update commands documentation (auto aim has reset option and can get step size)
