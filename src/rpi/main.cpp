@@ -74,9 +74,20 @@ int main() {
 		case 'n':
 			next_step = true;
 			break;
+		case 'm':
+			/*Mode to Manual*/
+			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Manual);
+			break;
+		case 'a':
+			/*Mode to Auto*/
+			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Auto);
+			break;
+		case 'o':
+			/*Mode to Override*/
+			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Override);
+			break;
 
 	}
-        //if (cv::waitKey(1) == 'q') running = false;
     }
 
     captureThread.join();
