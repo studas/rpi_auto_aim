@@ -29,6 +29,4 @@ typedef struct {
     Coordinate* error;
 } TaskParameters;
 
-void auto_aim(void* parameters);
-
 #endif // __AUTO_AIM_HPP__
