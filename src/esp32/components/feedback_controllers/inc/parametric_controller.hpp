@@ -11,6 +11,8 @@ public:
     // Compute the next control signal
     double calculateControl(double error);
 
+    void reset();
+
     std::vector<double> getCoefficients() const { return q; }
     void updateCoefficients(const std::vector<double>& q_coeffs);
 
