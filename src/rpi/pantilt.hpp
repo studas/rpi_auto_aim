@@ -10,7 +10,14 @@
 enum ControllerParam {
     Kp = 0,
     Ki = 1,
-    Kd = 2
+    Kd = 2,
+    Ks = 3 // Internal gain to correct control signal
+};
+
+enum OperationMode {
+    Manual = 0,
+    Auto = 1,
+    Override = 2 // Accepts both operation modes
 };
 
 extern std::atomic<int> pidKp;
@@ -24,6 +31,13 @@ public:
 
     void setXYErrors(int xError, int yError);
     void setControllerParameter(ControllerParam paramId, int value);
+    void setManualXAngle(int xAngle);
+    void setManualYAngle(int yAngle);
+    void setOperationMode(OperationMode opMode);
+    void setServoXMin(int value);
+    void setServoXMax(int value);
+    void setServoYMin(int value);
+    void setServoYMax(int value);
 
 private:
     PanTilt(const std::string& i2cBus, uint8_t deviceAddress);

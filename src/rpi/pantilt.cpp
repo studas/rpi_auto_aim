@@ -40,6 +40,48 @@ void PanTilt::setXYErrors(int xError, int yError) {
     sendCommand(command.str());
 }
 
+void PanTilt::setManualYAngle(int yAngle) {
+    std::ostringstream command;
+    command << "0 " << "1 " /*servoid*/ << yAngle << std::endl;
+    sendCommand(command.str());
+}
+
+void PanTilt::setManualXAngle(int xAngle) {
+    std::ostringstream command;
+    command << "0 " << "0 " /*servoid*/ << xAngle << std::endl;
+    sendCommand(command.str());
+}
+
+void PanTilt::setOperationMode(OperationMode opMode) {
+    std::ostringstream command;
+    command << "5 " << "0 " << opMode << std::endl;
+    sendCommand(command.str());
+}
+
+void PanTilt::setServoXMin(int value) {
+    std::ostringstream command;
+    command << "1 " << "0 " << value << std::endl;
+    sendCommand(command.str());
+}
+
+void PanTilt::setServoXMax(int value) {
+    std::ostringstream command;
+    command << "2 " << "0 " << value << std::endl;
+    sendCommand(command.str());
+}
+
+void PanTilt::setServoYMin(int value) {
+    std::ostringstream command;
+    command << "1 " << "1 " << value << std::endl;
+    sendCommand(command.str());
+}
+
+void PanTilt::setServoYMax(int value) {
+    std::ostringstream command;
+    command << "2 " << "1 " << value << std::endl;
+    sendCommand(command.str());
+}
+
 void PanTilt::setControllerParameter(ControllerParam paramId, int value) {
     std::ostringstream command;
     command << "4 " << static_cast<int>(paramId) << " " << value << std::endl;
