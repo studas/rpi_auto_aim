@@ -14,18 +14,16 @@
 #include "pid_controller.hpp"
 #include "auto_aim.hpp"
 #include "rasp_packet_decoder.hpp"
+#include "gpio_t.hpp"
 
 extern "C" void app_main(void){
     Servo servo0(13, LEDC_CHANNEL_0);
-    servo0.set_min_pulse_width(1300);
-    servo0.set_max_pulse_width(1800);
     Servo servo1(12, LEDC_CHANNEL_1);
-    servo1.set_min_pulse_width(1300);
-    servo1.set_max_pulse_width(1800);
     Servo servos[] = {servo0, servo1};
 
     AutoAimState auto_aim_state = MANUAL;
 
+    gpio_t handshake(5);
     I2CSlave i2c_slave(21, 22, 0x0A, 0);
 
     double kp = 0.320;
@@ -49,6 +47,8 @@ extern "C" void app_main(void){
 
             if (numbers == NULL) continue;
             bool valid_servo_id = numbers->param1 >= 0 && numbers->param1 < sizeof(servos) / sizeof(Servo);
+
+            handshake.set_level(LOW);
 
             switch (numbers->command){
                 case SET_ANGLE:
@@ -139,6 +139,8 @@ extern "C" void app_main(void){
 
             free(numbers);
         }
+
+        handshake.set_level(HIGH);
 
         free(commands);
         free(received_data);
