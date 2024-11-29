@@ -10,56 +10,17 @@
 #include "capture.hpp"
 #include "process.hpp"
 #include "pantilt.hpp"
+#include "control_error.hpp"
 
 extern const std::string windowName;
 extern std::atomic<int> xAngle;
 extern std::atomic<int> yAngle;
+extern std::atomic<int> targetRadius;
 
 // Global flag for running the application
 std::atomic<bool> running(true);
 std::atomic<bool> step_by_step(false);
 std::atomic<bool> next_step(false);
-
-std::atomic<bool> timeout(false);
-std::atomic<bool> changed(false);
-
-void sendErrors() {
-	static int prev_errorX = 0;
-	static int prev_errorY = 0;
-	PanTilt& pantilt = PanTilt::getInstance();
-	while(running) {
-		if(step_by_step) {
-			while(!next_step && running && step_by_step);
-			// Check again step_by_step for reasons of multithreading
-			pantilt.setXYErrors(-(centroidX - 320), centroidY - 240);
-			next_step = false;
-		} else {
-			timeout = false;
-			changed = false;
-			std::thread timeoutThread([]() {
-				int counter = 0;
-				while(running && !changed && counter++ < 490) usleep(1000); // 1ms Delay
-				timeout = (counter == 490);
-			});
-			int errorX = -(centroidX - 320);
-			int errorY = (centroidY - 240);
-
-			while(running && errorX == prev_errorX && errorY == prev_errorY && !timeout) {
-				errorX = -(centroidX - 320);
-				errorY = (centroidY - 240);
-				usleep(10000); // 10ms Min Delay
-			}
-			changed = true;
-			
-			pantilt.setXYErrors(errorX, errorY);
-			prev_errorX = errorX;
-			prev_errorY = errorY;
-			usleep(10000); // 10ms Min Delay
-			timeoutThread.join();
-			timeout = false;
-		}
-	}
-}
 
 int main() {
     std::queue<std::pair<cv::Mat, double>> frameQueue, processedQueue;
