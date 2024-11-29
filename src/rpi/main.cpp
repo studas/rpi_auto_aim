@@ -23,8 +23,6 @@ std::atomic<bool> next_step(false);
 std::atomic<bool> timeout(false);
 std::atomic<bool> changed(false);
 
-
-
 void sendErrors() {
 	static int prev_errorX = 0;
 	static int prev_errorY = 0;
@@ -40,8 +38,8 @@ void sendErrors() {
 			changed = false;
 			std::thread timeoutThread([]() {
 				int counter = 0;
-				while(running && !changed && counter++ < 495) usleep(1000); // 1ms Delay
-				timeout = (counter == 495);
+				while(running && !changed && counter++ < 490) usleep(1000); // 1ms Delay
+				timeout = (counter == 490);
 			});
 			int errorX = -(centroidX - 320);
 			int errorY = (centroidY - 240);
@@ -49,14 +47,14 @@ void sendErrors() {
 			while(running && errorX == prev_errorX && errorY == prev_errorY && !timeout) {
 				errorX = -(centroidX - 320);
 				errorY = (centroidY - 240);
-				usleep(5000); // 5ms Min Delay
+				usleep(10000); // 10ms Min Delay
 			}
 			changed = true;
 			
 			pantilt.setXYErrors(errorX, errorY);
 			prev_errorX = errorX;
 			prev_errorY = errorY;
-			usleep(5000); // 5ms Min Delay
+			usleep(10000); // 10ms Min Delay
 			timeoutThread.join();
 			timeout = false;
 		}
@@ -77,6 +75,9 @@ int main() {
                               std::ref(frameMutex), std::ref(processedMutex),
                               std::ref(frameCondVar), std::ref(processedCondVar));
     std::thread errorThread(sendErrors);
+    
+    PanTilt& pantilt = PanTilt::getInstance();
+    pantilt.setOperationMode(OperationMode::Manual);
 
     while (running) {
         std::unique_lock<std::mutex> lock(processedMutex);
