@@ -19,9 +19,9 @@ std::atomic<int> servoYMin(1300);
 std::atomic<int> servoYMax(1800);
 
 // PID parameters
-std::atomic<int> pidKp(135);
-std::atomic<int> pidKd(42);
-std::atomic<int> pidKi(5);
+std::atomic<int> pidKp(200);
+std::atomic<int> pidKd(105);
+std::atomic<int> pidKi(35);
 
 // Correction Factor
 std::atomic<int> pidKs(200);
@@ -34,7 +34,7 @@ std::atomic<int> yAngle(90);
 std::atomic<OperationMode> opMode(OperationMode::Manual); // This is a default to the bar, the actual default is sent by the main
 
 // Target Radius
-std::atomic<int> targetRadius(10);
+std::atomic<int> targetRadius(20);
 
 // Callback functions for trackbars
 void onBlueChange(int value, void*) { blueFilter = value; }
