@@ -10,7 +10,7 @@ extern std::atomic<int> centroidY;
 extern std::atomic<int> targetRadius;
 extern std::atomic<bool> running;
 extern std::atomic<bool> step_by_step;
-extern std::atomic<bool> next_step;
+std::atomic<bool> next_step;
 
 std::atomic<bool> timeout(false);
 std::atomic<bool> changed(false);

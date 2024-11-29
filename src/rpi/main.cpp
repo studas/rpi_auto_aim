@@ -11,16 +11,13 @@
 #include "process.hpp"
 #include "pantilt.hpp"
 #include "control_error.hpp"
+#include "keyboard.hpp"
 
 extern const std::string windowName;
-extern std::atomic<int> xAngle;
-extern std::atomic<int> yAngle;
-extern std::atomic<int> targetRadius;
 
 // Global flag for running the application
 std::atomic<bool> running(true);
 std::atomic<bool> step_by_step(false);
-std::atomic<bool> next_step(false);
 
 int main() {
     std::queue<std::pair<cv::Mat, double>> frameQueue, processedQueue;
@@ -56,45 +53,7 @@ int main() {
         std::cout << "Centroid: (" << centroidX.load() << ", " << centroidY.load() << ")" << std::endl;
 	std::cout << "Step by step mode: " << ((step_by_step)? "ON" : "OFF") << std::endl;
 
-	switch(cv::waitKey(1)) {
-		case 'q':
-			running = false;
-			break;
-		case 's':
-			step_by_step = !step_by_step;
-			break;
-		case 'n':
-			next_step = true;
-			break;
-		case 'm':
-			/*Mode to Manual*/
-			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Manual);
-			break;
-		case 'a':
-			/*Mode to Auto*/
-			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Auto);
-			break;
-		case 'o':
-			/*Mode to Override*/
-			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Override);
-			break;
-		case 'j':
-			/* Increases Y angle */
-			if(yAngle + 1 <= 180) cv::setTrackbarPos("Angle Y", windowName, ++yAngle);
-			break;
-		case 'k':
-			/* Decreases Y angle */
-			if(yAngle - 1 >= 0) cv::setTrackbarPos("Angle Y", windowName, --yAngle);
-			break;
-		case 'h':
-			/* Increases X angle */
-			if(xAngle + 1 <= 180) cv::setTrackbarPos("Angle X", windowName, ++xAngle);
-			break;
-		case 'l':
-			/* Decreases X angle */
-			if(xAngle - 1 >= 0) cv::setTrackbarPos("Angle X", windowName, --xAngle);
-			break;
-	}
+	handleKeyboardInput();	
     }
 
     captureThread.join();
