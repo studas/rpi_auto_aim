@@ -5,6 +5,7 @@
 #include <sys/ioctl.h>   // For ioctl()
 #include <stdexcept>     // For exceptions
 #include <sstream>       // For stringstream
+#include <iostream>
 
 // Static method to get the singleton instance
 PanTilt& PanTilt::getInstance() {
@@ -28,11 +29,18 @@ PanTilt::PanTilt(const std::string& i2cBus, uint8_t deviceAddress)
 
 void PanTilt::sendCommand(const std::string& command) {
     std::lock_guard<std::mutex> lock(commandMutex);
-    if (write(i2cFile, command.c_str(), command.size()) < 0) {
-        throw std::runtime_error("Failed to send I2C command: " + command);
+    try {
+        if (write(i2cFile, command.c_str(), command.size()) < 0) {
+            std::cerr << "Warning: Failed to send I2C command: " << command << std::endl;
+            return; // Optionally, return without throwing
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: Exception while sending I2C command: " << e.what() << std::endl;
     }
+
     usleep(20000); // 20ms
 }
+
 
 void PanTilt::setXYErrors(int xError, int yError) {
     std::ostringstream command;
