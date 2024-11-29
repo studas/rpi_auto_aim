@@ -16,6 +16,16 @@
 #include "rasp_packet_decoder.hpp"
 #include "gpio_t.hpp"
 
+void reseter(void *params){
+    PIDController *controllers = (PIDController*)params;
+    vTaskDelay(pdMS_TO_TICKS(1000*1));
+    ESP_LOGI("reseter", "Resetting controllers");
+    for(int i = 0; i < 2; i++){
+        controllers[i].reset();
+    }
+    vTaskDelete(NULL);
+}
+
 extern "C" void app_main(void){
     Servo servo0(13, LEDC_CHANNEL_0);
     servo0.set_min_pulse_width(1300);
@@ -29,12 +39,14 @@ extern "C" void app_main(void){
 
     I2CSlave i2c_slave(21, 22, 0x0A, 0);
 
-    double kp = 0.140;
-    double ki = 0.005;
-    double kd = 0.062;
+    double kp = 0.200;
+    double ki = 0.035;
+    double kd = 0.105;
     double ks = 0.200;
     PIDController x_controller(kp, ki, kd, ks);
     PIDController y_controller(kp, ki, kd, ks);
+    PIDController controllers[] = {x_controller, y_controller};
+    TaskHandle_t reseter_handle = NULL;
     
     while(1){
         char *received_data = i2c_slave.read_buffer();
@@ -80,9 +92,15 @@ extern "C" void app_main(void){
                     if (auto_aim_state == MANUAL) break;
                     Coordinate error = {numbers->param1, numbers->param2};
                     if (error.x == 0 && error.y == 0) {
-                        x_controller.reset();
-                        y_controller.reset();
+                        if (xTaskGetHandle("reseter") == NULL) 
+                            xTaskCreate(reseter, "reseter", 4096, controllers, 1, &reseter_handle);
                         break;
+                    }
+
+                    if (xTaskGetHandle("reseter") != NULL) {
+                        ESP_LOGI("main", "Deleting reseter task");
+                        vTaskDelete(reseter_handle);
+                        reseter_handle = NULL;
                     }
 
                     double x_control = x_controller.calculateControl(error.x);
