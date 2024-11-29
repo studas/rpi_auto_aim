@@ -4,6 +4,7 @@
 
 
 extern std::atomic<bool> running;
+extern std::atomic<int> targetRadius;
 
 std::atomic<int> centroidX(-1);
 std::atomic<int> centroidY(-1);
@@ -85,6 +86,8 @@ void processFrames(std::queue<std::pair<cv::Mat, double>>& frameQueue,
     	// Draw a horizontal blue line at y = 240
     	cv::line(dilated, cv::Point(0, 240), cv::Point(dilated.cols - 1, 240), cv::Scalar(255, 0, 0), 2);
 
+	// Draw circle of the target
+	cv::circle(dilated, cv::Point(320, 240), targetRadius, cv::Scalar(255, 0, 0), 2);
 
         // Pass the processed frame
         std::lock_guard<std::mutex> processedLock(processedMutex);

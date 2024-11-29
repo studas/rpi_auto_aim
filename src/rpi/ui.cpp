@@ -22,6 +22,7 @@ std::atomic<int> servoYMax(1800);
 std::atomic<int> pidKp(135);
 std::atomic<int> pidKd(42);
 std::atomic<int> pidKi(5);
+
 // Correction Factor
 std::atomic<int> pidKs(200);
 
@@ -30,7 +31,10 @@ std::atomic<int> xAngle(90);
 std::atomic<int> yAngle(90);
 
 // Operation Mode
-std::atomic<OperationMode> opMode(OperationMode::Manual);
+std::atomic<OperationMode> opMode(OperationMode::Manual); // This is a default to the bar, the actual default is sent by the main
+
+// Target Radius
+std::atomic<int> targetRadius(10);
 
 // Callback functions for trackbars
 void onBlueChange(int value, void*) { blueFilter = value; }
@@ -40,6 +44,8 @@ void onRedChange(int value, void*) { redFilter = value; }
 void onThresholdValueChange(int value, void*) { thresholdValue = value; }
 //void onKernelShapeChange(int value, void*) { kernelShape = value; }
 void onKernelSizeChange(int value, void*) { kernelSize = value; }
+void onTargetRadiusChange(int value, void*) { targetRadius = value; }
+
 void onPIDKpChange(int value, void*) {
 	PanTilt& pantilt = PanTilt::getInstance();
 	pidKp = value;
@@ -50,6 +56,7 @@ void onPIDKdChange(int value, void*) {
 	pidKd = value;
 	pantilt.setControllerParameter(ControllerParam::Kd, pidKd);
 }
+
 void onPIDKiChange(int value, void*) {
 	PanTilt& pantilt = PanTilt::getInstance();
 	pidKi = value;
@@ -156,6 +163,7 @@ void createUI() {
     cv::createTrackbar("Operation Mode", windowName, nullptr, 2, onOpModeChange);
     cv::createTrackbar("Angle X", windowName, nullptr, 180, onXAngleChange);
     cv::createTrackbar("Angle Y", windowName, nullptr, 180, onYAngleChange);
+    cv::createTrackbar("Target Radius", windowName, nullptr, 100, onTargetRadiusChange);
     cv::createTrackbar("Servo X Min", windowName, nullptr, 3000, onServoXMinChange);
     cv::createTrackbar("Servo X Max", windowName, nullptr, 3000, onServoXMaxChange);
     cv::createTrackbar("Servo Y Min", windowName, nullptr, 3000, onServoYMinChange);
@@ -181,5 +189,6 @@ void createUI() {
     cv::setTrackbarPos("Servo Y Max", windowName, servoYMax);
     cv::setTrackbarPos("Angle X", windowName, xAngle);
     cv::setTrackbarPos("Angle Y", windowName, yAngle);
+    cv::setTrackbarPos("Target Radius", windowName, targetRadius);
 
 }
