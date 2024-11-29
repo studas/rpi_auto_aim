@@ -78,9 +78,9 @@ extern "C" void app_main(void){
                     Coordinate error = {numbers->param1, numbers->param2};
                     if (error.x == 0 && error.y == 0) break;
 
-                    ESP_LOGI("main", "Error: (%d, %d)", error.x, error.y);
                     double x_control = x_controller.calculateControl(error.x);
                     double y_control = y_controller.calculateControl(error.y);
+                    ESP_LOGI("main", "Error: (%d, %d) | Control: (%lf, %lf)", error.x, error.y, x_control, y_control);
 
                     servos[0].add_pulse_width(x_control);
                     servos[1].add_pulse_width(y_control);
