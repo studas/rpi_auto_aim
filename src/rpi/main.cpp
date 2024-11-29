@@ -18,7 +18,14 @@ std::atomic<bool> running(true);
 std::atomic<bool> step_by_step(false);
 std::atomic<bool> next_step(false);
 
+std::atomic<bool> timeout(false);
+std::atomic<bool> changed(false);
+
+
+
 void sendErrors() {
+	static int prev_errorX = 0;
+	static int prev_errorY = 0;
 	PanTilt& pantilt = PanTilt::getInstance();
 	while(running) {
 		if(step_by_step) {
@@ -27,8 +34,29 @@ void sendErrors() {
 			pantilt.setXYErrors(-(centroidX - 320), centroidY - 240);
 			next_step = false;
 		} else {
-			pantilt.setXYErrors(-(centroidX - 320), centroidY - 240);
-			usleep(100000);
+			timeout = false;
+			changed = false;
+			std::thread timeoutThread([]() {
+				int counter = 0;
+				while(!changed && counter++ < 495) usleep(1000); // 1ms Delay
+				timeout = (counter == 495);
+			});
+			int errorX = -(centroidX - 320);
+			int errorY = (centroidY - 240);
+
+			while(errorX == prev_errorX && errorY == prev_errorY && !timeout) {
+				errorX = -(centroidX - 320);
+				errorY = (centroidY - 240);
+				usleep(5000); // 5ms Min Delay
+			}
+			changed = true;
+			
+			pantilt.setXYErrors(errorX, errorY);
+			prev_errorX = errorX;
+			prev_errorY = errorY;
+			usleep(5000); // 5ms Min Delay
+			timeoutThread.join();
+			timeout = false;
 		}
 	}
 }
@@ -86,7 +114,6 @@ int main() {
 			/*Mode to Override*/
 			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Override);
 			break;
-
 	}
     }
 
