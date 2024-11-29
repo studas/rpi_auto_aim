@@ -12,6 +12,8 @@
 #include "pantilt.hpp"
 
 extern const std::string windowName;
+extern std::atomic<int> xAngle;
+extern std::atomic<int> yAngle;
 
 // Global flag for running the application
 std::atomic<bool> running(true);
@@ -38,13 +40,13 @@ void sendErrors() {
 			changed = false;
 			std::thread timeoutThread([]() {
 				int counter = 0;
-				while(!changed && counter++ < 495) usleep(1000); // 1ms Delay
+				while(running && !changed && counter++ < 495) usleep(1000); // 1ms Delay
 				timeout = (counter == 495);
 			});
 			int errorX = -(centroidX - 320);
 			int errorY = (centroidY - 240);
 
-			while(errorX == prev_errorX && errorY == prev_errorY && !timeout) {
+			while(running && errorX == prev_errorX && errorY == prev_errorY && !timeout) {
 				errorX = -(centroidX - 320);
 				errorY = (centroidY - 240);
 				usleep(5000); // 5ms Min Delay
@@ -113,6 +115,22 @@ int main() {
 		case 'o':
 			/*Mode to Override*/
 			cv::setTrackbarPos("Operation Mode", windowName, OperationMode::Override);
+			break;
+		case 'j':
+			/* Increases Y angle */
+			if(yAngle + 1 <= 180) cv::setTrackbarPos("Angle Y", windowName, ++yAngle);
+			break;
+		case 'k':
+			/* Decreases Y angle */
+			if(yAngle - 1 >= 0) cv::setTrackbarPos("Angle Y", windowName, --yAngle);
+			break;
+		case 'h':
+			/* Increases X angle */
+			if(xAngle + 1 <= 180) cv::setTrackbarPos("Angle X", windowName, ++xAngle);
+			break;
+		case 'l':
+			/* Decreases X angle */
+			if(xAngle - 1 >= 0) cv::setTrackbarPos("Angle X", windowName, --xAngle);
 			break;
 	}
     }
