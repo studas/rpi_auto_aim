@@ -78,4 +78,3 @@ The 3D-printed pan-tilt design uses the **Servo Pan Tilt - Raspberry Pi Camera**
 ---
 
 For further details, including setup, code structure, and analysis, visit the **[Wiki](https://github.com/studas/rpi_auto_aim/wiki/)**.
-```
